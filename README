@@ -1,0 +1,27 @@
+# L-Systems și Grafeme Fractale
+
+Acest proiect implementează un procesor de sisteme Lindenmayer (L-Systems) în limbajul C. Programul permite încărcarea regulilor din fișiere, derivarea succesivă a axiomelor și include un sistem complet de management al stărilor (Undo/Redo) bazat pe stive.
+
+## Structuri de Date Utilizate
+
+Arhitectura proiectului se bazează pe următoarele structuri de date principale:
+
+*   **`L_system`**: Structura centrală a programului. Stochează datele esențiale ale sistemului curent, inclusiv axioma, regulile și numele fișierului sursă (informație necesară pentru afișarea corectă a mesajelor la operațiile de Undo/Redo).
+*   **`regula`**: Reprezintă o regulă de derivare. Reține un simbol de bază și șirul succesor corespunzător acestuia.
+*   **`stare`**: Încapsulează stadiul complet al sistemului la un moment dat, fiind esențială pentru funcționalitatea de Undo/Redo.
+*   **`istoric`**: Implementează o structură de tip stivă (stack). Reține o `stare` și o legătură (pointer) către următoarea stare din istoric.
+
+## Logica de Funcționare și Comenzi
+
+Punctul de intrare al aplicației (`main`) funcționează pe baza unei bucle `while` care procesează comenzi până la întâlnirea comenzii `EXIT` sau la finalul datelor de intrare (EOF).
+
+### 1. Încărcarea Sistemului (`LOAD`)
+La primirea comenzii de încărcare, se alocă memorie pentru reținerea numelui sistemului. Prin intermediul funcției `LSYSTEM`, starea curentă este copiată și introdusă (push) în stiva de `UNDO`, iar stiva de `REDO` este golită (clear). Funcția `load_sistem` deschide fișierul și folosește un buffer dinamic pentru citirea datelor, adaptându-se dimensiunilor variabile ale fișierelor de intrare.
+
+### 2. Derivarea (`DERIVE`)
+Înainte de derivare, programul validează existența unui sistem încărcat. Funcția de derivare primește sistemul actual și numărul de pași (iterații). Printr-o buclă `for`, se calculează mai întâi lungimea viitoare a șirului derivat pentru a permite o alocare exactă a memoriei. Ulterior, noul șir este compus prin înlocuirea fiecărui simbol cu succesorul său definit în reguli.
+
+### 3. Managementul Stărilor (`UNDO` / `REDO`)
+Sistemul de istoric folosește două stive separate:
+*   **`UNDO`**: Verifică disponibilitatea unei stări anterioare. Dacă există, starea curentă este salvată într-o copie și introdusă în stiva `REDO`. Apoi, se extrage (pop) starea din vârful stivei `UNDO`, aceasta devenind noua stare curentă.
+*   **`REDO`**: Verifică disponibilitatea unei stări anulate. Dacă există, starea curentă este salvată și introdusă în stiva `UNDO`. Vârful stivei `REDO` este extras și devine starea activă a programului.
